@@ -12,3 +12,7 @@ def borrow_book(reader_id: str, book_copy_id: str, librarian_id: int = 1, db: Se
 @router.post("/return/{borrow_id}")
 def return_book(borrow_id: int, db: Session = Depends(get_db)):
     return borrow_service.return_book(db=db, borrow_id=borrow_id)
+
+@router.get("/")
+def get_borrows(reader_id: str = None, status: str = None, db: Session = Depends(get_db)):
+    return borrow_service.get_borrows(db=db, reader_id=reader_id, status=status)
