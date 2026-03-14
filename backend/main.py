@@ -9,6 +9,7 @@ from api.books import router as books_router
 from api.borrow import router as borrow_router
 from api.auth import router as auth_router
 from api.users import router as users_router
+from api.reports import router as reports_router
 
 # Sinh DB
 models.Base.metadata.create_all(bind=engine)
@@ -36,3 +37,4 @@ app.include_router(books_router)
 app.include_router(borrow_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(reports_router)
