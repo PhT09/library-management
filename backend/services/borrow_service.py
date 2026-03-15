@@ -51,7 +51,7 @@ def return_book(db: Session, borrow_id: int):
     db.commit()
     return {"message": "Xác nhận trả sách thành công, đã xếp lại vào kho!"}
 
-def get_borrows(db: Session, reader_id: str = None, status: str = None):
+def get_borrows(db: Session, reader_id: str = None, status: str = "Borrowing"):
     query = db.query(models.BorrowRecord)
     if reader_id:
         query = query.filter(models.BorrowRecord.reader_id == reader_id)

@@ -1,15 +1,25 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from datetime import date
+from typing import Optional
 import models
 
-def get_top_borrowed_books(db: Session, limit: int = 10):
+def get_top_borrowed_books(db: Session, limit: int = 10, start_date: Optional[date] = None, end_date: Optional[date] = None):
     # Đếm số lượng mượn (đối với mỗi đầu sách)
     # Join BorrowRecord -> BookCopy -> Book
     query = (
         db.query(models.Book, func.count(models.BorrowRecord.id).label("borrow_count"))
         .join(models.BookCopy, models.Book.id == models.BookCopy.book_id)
         .join(models.BorrowRecord, models.BookCopy.id == models.BorrowRecord.book_copy_id)
-        .group_by(models.Book.id)
+    )
+    
+    if start_date:
+        query = query.filter(models.BorrowRecord.borrow_date >= start_date)
+    if end_date:
+        query = query.filter(models.BorrowRecord.borrow_date <= end_date)
+        
+    query = (
+        query.group_by(models.Book.id)
         .order_by(func.count(models.BorrowRecord.id).desc())
         .limit(limit)
     )
@@ -30,7 +40,7 @@ def get_top_borrowed_books(db: Session, limit: int = 10):
         
     return report
 
-def get_unreturned_readers(db: Session):
+def get_unreturned_readers(db: Session, start_date: Optional[date] = None, end_date: Optional[date] = None):
     # Danh sách những sinh viên có phiếu mượn mang status="Borrowing"
     query = (
         db.query(models.BorrowRecord, models.Reader, models.BookCopy, models.Book)
@@ -39,6 +49,11 @@ def get_unreturned_readers(db: Session):
         .join(models.Book, models.BookCopy.book_id == models.Book.id)
         .filter(models.BorrowRecord.status == "Borrowing")
     )
+    
+    if start_date:
+        query = query.filter(models.BorrowRecord.borrow_date >= start_date)
+    if end_date:
+        query = query.filter(models.BorrowRecord.borrow_date <= end_date)
     
     results = query.all()
     

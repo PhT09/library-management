@@ -14,6 +14,10 @@ from api.reports import router as reports_router
 # Sinh DB
 models.Base.metadata.create_all(bind=engine)
 
+# Khởi tạo mặc định tài khoản admin
+from seed_admin import seed_admin
+seed_admin()
+
 app = FastAPI(
     title="Library Management API",
     description="Backend API cho Hệ thống Quản lý Thư viện Đại học",

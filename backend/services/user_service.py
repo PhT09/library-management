@@ -46,6 +46,11 @@ def update_librarian(db: Session, librarian_id: int, user_in: UserUpdate):
     return db_user
 
 def delete_librarian_and_reassign(db: Session, librarian_id: int, target_librarian_id: int):
+    # Bảo vệ tài khoản admin, nghiêm cấm xoá
+    protect_user = db.query(User).filter(User.id == librarian_id).first()
+    if protect_user and protect_user.role == "admin":
+        raise HTTPException(status_code=403, detail="Hành động cấm! Không thể xóa tài khoản Administrator.")
+
     db_user = db.query(User).filter(User.id == librarian_id, User.role == "librarian").first()
     if not db_user:
         raise HTTPException(status_code=404, detail="Librarian not found")
