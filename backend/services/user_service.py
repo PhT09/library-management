@@ -5,8 +5,13 @@ from models.borrow import BorrowRecord
 from schemas.user import UserCreate, UserUpdate
 from core.security import get_password_hash
 
-def get_librarians(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(User).filter(User.role == "librarian").offset(skip).limit(limit).all()
+from typing import Optional
+
+def get_librarians(db: Session, skip: int = 0, limit: int = 100, full_name: Optional[str] = None):
+    query = db.query(User).filter(User.role == "librarian")
+    if full_name:
+        query = query.filter(User.full_name.ilike(f"%{full_name}%"))
+    return query.offset(skip).limit(limit).all()
 
 def create_librarian(db: Session, user_in: UserCreate):
     # Check if username exists

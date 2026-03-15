@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
+from typing import Optional
 from sqlalchemy.orm import Session
 from api.deps import get_db, get_current_active_admin
 from schemas.user import UserCreate, UserUpdate, UserResponse
@@ -9,13 +10,18 @@ router = APIRouter(prefix="/librarians", tags=["Quản lý Thủ thư"])
 
 @router.get("/", response_model=list[UserResponse])
 def get_all_librarians(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_admin: User = Depends(get_current_active_admin)
+    skip: int = 0, 
+    limit: int = 100, 
+    full_name: Optional[str] = Query(None, description="Tìm kiếm theo Tên Thủ thư"),
+    db: Session = Depends(get_db), 
+    current_admin: User = Depends(get_current_active_admin)
 ):
     """
     Lấy danh sách tất cả Thủ thư.
+    Có thể lọc theo tên thủ thư bằng cách truyền full_name.
     Chỉ Admin mới có quyền gọi API này (thông qua Dependency `get_current_active_admin`).
     """
-    return user_service.get_librarians(db, skip, limit)
+    return user_service.get_librarians(db=db, skip=skip, limit=limit, full_name=full_name)
 
 @router.post("/", response_model=UserResponse)
 def create_librarian(
