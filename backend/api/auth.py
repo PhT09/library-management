@@ -42,3 +42,32 @@ def test_token(current_user: User = Depends(get_current_user)) -> User:
     Test access token
     """
     return current_user
+
+from schemas.password_reset import ForgotPasswordRequest
+from models.password_reset import PasswordResetTicket
+
+@router.post("/forgot-password")
+def request_password_reset(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Yêu cầu lấy lại mật khẩu.
+    - Admin: Yêu cầu liên hệ lập trình viên.
+    - Librarian: Tạo ticket reset trong CSDL.
+    """
+    user = db.query(User).filter(
+        (User.username == request.identifier) | (User.full_name == request.identifier)
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user.role == "admin":
+        return {"message": "Please contact the system developer for a password reset"}
+        
+    ticket = PasswordResetTicket(user_id=user.id, reason=request.reason)
+    db.add(ticket)
+    db.commit()
+    
+    return {"message": "Password reset request submitted successfully. Please wait for admin approval."}
