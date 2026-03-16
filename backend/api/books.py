@@ -14,7 +14,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
 def get_all_categories(db: Session = Depends(get_db)):
     return book_service.get_all_categories(db=db)
 
-@router.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
+@router.patch("/categories/{category_id}", response_model=schemas.CategoryResponse)
 def update_category(category_id: str, category_update: schemas.CategoryUpdate, db: Session = Depends(get_db)):
     return book_service.update_category(db=db, category_id=category_id, category_update=category_update)
 
@@ -34,7 +34,7 @@ def get_all_books(db: Session = Depends(get_db)):
 def search_books(q: str, db: Session = Depends(get_db)):
     return book_service.search_books(db=db, q=q)
 
-@router.put("/books/{book_id}", response_model=schemas.BookResponse)
+@router.patch("/books/{book_id}", response_model=schemas.BookResponse)
 def update_book(book_id: str, book_update: schemas.BookUpdate, db: Session = Depends(get_db)):
     return book_service.update_book(db=db, book_id=book_id, book_update=book_update)
 
@@ -50,7 +50,7 @@ def create_book_copy(copy: schemas.BookCopyCreate, db: Session = Depends(get_db)
 def get_all_book_copies(db: Session = Depends(get_db)):
     return book_service.get_all_book_copies(db=db)
 
-@router.put("/book-copies/{copy_id}", response_model=schemas.BookCopyResponse)
+@router.patch("/book-copies/{copy_id}", response_model=schemas.BookCopyResponse)
 def update_book_copy(copy_id: str, copy_update: schemas.BookCopyUpdate, db: Session = Depends(get_db)):
     return book_service.update_book_copy(db=db, copy_id=copy_id, copy_update=copy_update)
 

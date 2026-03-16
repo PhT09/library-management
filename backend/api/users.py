@@ -33,7 +33,7 @@ def create_librarian(
     """
     return user_service.create_librarian(db, user_in)
 
-@router.put("/{librarian_id}", response_model=UserResponse)
+@router.patch("/{librarian_id}", response_model=UserResponse)
 def update_librarian(
     librarian_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_admin: User = Depends(get_current_active_admin)
 ):

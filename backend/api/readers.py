@@ -18,9 +18,13 @@ def get_all_readers(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
 def get_reader(reader_id: str, db: Session = Depends(get_db)):
     return reader_service.get_reader_by_id(db=db, reader_id=reader_id)
 
-@router.put("/{reader_id}", response_model=schemas.ReaderResponse)
+@router.patch("/{reader_id}", response_model=schemas.ReaderResponse)
 def update_reader(reader_id: str, reader_update: schemas.ReaderUpdate, db: Session = Depends(get_db)):
     return reader_service.update_reader(db=db, reader_id=reader_id, reader_update=reader_update)
+
+@router.patch("/{reader_id}/toggle-status")
+def toggle_reader_status(reader_id: str, db: Session = Depends(get_db)):
+    return reader_service.toggle_reader_status(db=db, reader_id=reader_id)
 
 @router.delete("/{reader_id}")
 def delete_reader(reader_id: str, db: Session = Depends(get_db)):
