@@ -18,7 +18,7 @@ function App() {
           <Route path="books" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Quản lý danh mục sách (Demo)</h2></div>} />
           <Route path="borrow-return" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Mượn/Trả sách (Demo)</h2></div>} />
           <Route path="users" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Quản lý người dùng hệ thống (Demo)</h2></div>} />
-          <Route path="settings" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Cấu phần hệ thống (Demo)</h2></div>} />
+          <Route path="change-password" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Đổi mật khẩu (Demo)</h2></div>} />
         </Route>
       </Routes>
     </BrowserRouter>

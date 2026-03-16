@@ -139,25 +139,24 @@ export default function PublicPage() {
                 <p className="text-xl mb-8 opacity-90">Tìm kiếm hàng nghìn đầu sách cho việc học tập và nghiên cứu</p>
 
                 <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-2 flex flex-col md:flex-row gap-2">
-                    <div className="flex-grow p-input-icon-left w-full md:w-auto">
-                        <i className="pi pi-search z-10 ml-2" />
+                    <div className="flex-grow flex items-center w-full md:w-auto relative">
+                        <i className="pi pi-search absolute left-4 text-gray-500 pointer-events-none z-10" />
                         <InputText
                             placeholder="Tìm kiếm theo tên sách, tác giả..."
-                            className="w-full pl-10 border-none font-medium text-lg focus:ring-0"
+                            className="w-full pl-12 py-3 border-none font-medium text-lg focus:ring-0 text-gray-800"
                             style={{ boxShadow: 'none' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         />
                     </div>
-                    <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-gray-200">
+                    <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-gray-200 flex items-center">
                         <Dropdown
                             value={selectedCategory}
                             options={categories}
                             onChange={(e) => setSelectedCategory(e.value)}
                             placeholder="Tất cả chuyên ngành"
                             className="w-full border-none shadow-none text-lg flex items-center"
-                            panelClassName="w-full"
                         />
                     </div>
                     <Button
