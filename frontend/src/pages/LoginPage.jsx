@@ -67,19 +67,19 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 w-full">
                         <label htmlFor="username" className="font-semibold text-gray-700">Tên đăng nhập</label>
                         <InputText
                             id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="p-3"
+                            className="w-full p-3"
                             placeholder="Nhập tên đăng nhập"
                             disabled={loading}
                         />
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 w-full">
                         <label htmlFor="password" className="font-semibold text-gray-700">Mật khẩu</label>
                         <Password
                             inputId="password"
@@ -105,7 +105,7 @@ export default function LoginPage() {
                     <Button
                         type="submit"
                         label={loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-                        className="w-full p-3 mt-4 text-lg"
+                        className="w-full p-3 mt-4 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-colors"
                         disabled={loading}
                         icon={loading ? 'pi pi-spin pi-spinner' : null}
                     />
