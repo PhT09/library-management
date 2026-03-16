@@ -26,11 +26,11 @@ def seed_admin():
         db.add(new_admin)
         db.commit()
         db.refresh(new_admin)
-        print("🚀 Khởi tạo thành công tài khoản Admin:")
+        print("Khởi tạo thành công tài khoản Admin:")
         print("   - Username: admin@admin.com")
         print("   - Password: AdminLibMng@123")
     else:
-        print("✅ Tài khoản admin đã tồn tại. Username: admin@admin.com")
+        print("Tài khoản admin đã tồn tại. Username: admin@admin.com")
         
     db.close()
 

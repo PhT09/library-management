@@ -5,8 +5,13 @@ from models.borrow import BorrowRecord
 from schemas.user import UserCreate, UserUpdate
 from core.security import get_password_hash
 
-def get_librarians(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(User).filter(User.role == "librarian").offset(skip).limit(limit).all()
+from typing import Optional
+
+def get_librarians(db: Session, skip: int = 0, limit: int = 100, full_name: Optional[str] = None):
+    query = db.query(User).filter(User.role == "librarian")
+    if full_name:
+        query = query.filter(User.full_name.ilike(f"%{full_name}%"))
+    return query.offset(skip).limit(limit).all()
 
 def create_librarian(db: Session, user_in: UserCreate):
     # Check if username exists
@@ -46,6 +51,11 @@ def update_librarian(db: Session, librarian_id: int, user_in: UserUpdate):
     return db_user
 
 def delete_librarian_and_reassign(db: Session, librarian_id: int, target_librarian_id: int):
+    # Bảo vệ tài khoản admin, nghiêm cấm xoá
+    protect_user = db.query(User).filter(User.id == librarian_id).first()
+    if protect_user and protect_user.role == "admin":
+        raise HTTPException(status_code=403, detail="Hành động cấm! Không thể xóa tài khoản Administrator.")
+
     db_user = db.query(User).filter(User.id == librarian_id, User.role == "librarian").first()
     if not db_user:
         raise HTTPException(status_code=404, detail="Librarian not found")

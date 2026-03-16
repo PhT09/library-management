@@ -13,6 +13,11 @@ def create_reader(reader: schemas.ReaderCreate, db: Session = Depends(get_db)):
 @router.get("/")
 def get_all_readers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return reader_service.get_all_readers(db=db, skip=skip, limit=limit)
+
+@router.get("/{reader_id}", response_model=schemas.ReaderResponse)
+def get_reader(reader_id: str, db: Session = Depends(get_db)):
+    return reader_service.get_reader_by_id(db=db, reader_id=reader_id)
+
 @router.put("/{reader_id}", response_model=schemas.ReaderResponse)
 def update_reader(reader_id: str, reader_update: schemas.ReaderUpdate, db: Session = Depends(get_db)):
     return reader_service.update_reader(db=db, reader_id=reader_id, reader_update=reader_update)
