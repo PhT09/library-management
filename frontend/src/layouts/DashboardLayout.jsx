@@ -25,7 +25,7 @@ export default function DashboardLayout() {
 
         const adminItems = [
             { label: 'Quản lý Người dùng hệ thống', icon: 'pi pi-id-card', command: () => navigate('/admin/users') },
-            { label: 'Cấu phần hệ thống', icon: 'pi pi-cog', command: () => navigate('/admin/settings') }
+            { label: 'Đổi mật khẩu', icon: 'pi pi-key', command: () => navigate('/admin/change-password') }
         ];
 
         return userRole === 'admin' ? [...adminItems, ...commonItems] : [...librarianItems, ...commonItems];

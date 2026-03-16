@@ -217,15 +217,15 @@ export default function ReaderManagement() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-bold text-gray-800 m-0">Quản lý Độc giả</h2>
             <div className="flex flex-col md:flex-row gap-3">
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
+                <div className="relative">
+                    <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                     <InputText
                         type="search"
                         onInput={(e) => setGlobalFilter(e.target.value)}
                         placeholder="Tìm kiếm..."
-                        className="w-full md:w-auto"
+                        className="w-full md:w-auto pl-10"
                     />
-                </span>
+                </div>
                 <Button label="Thêm mới" icon="pi pi-plus" className="p-button-success" onClick={openNew} />
                 <Button label="Xuất dữ liệu" icon="pi pi-file-excel" className="p-button-help" onClick={exportCSV} />
             </div>
