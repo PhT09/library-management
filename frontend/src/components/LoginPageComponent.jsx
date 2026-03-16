@@ -6,19 +6,13 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { authApi } from '../services/api';
 
-export default function LoginPage() {
+export default function LoginPageComponent({ title, roleLabel, requiredRole, icon }) {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    /**
-     * Xử lý đăng nhập:
-     * 1) POST /login → nhận access_token (OAuth2 form-urlencoded)
-     * 2) GET /login/test-token → nhận thông tin user (role, full_name...)
-     * 3) Redirect theo role: admin → /admin/users, librarian → /admin/books
-     */
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -30,20 +24,28 @@ export default function LoginPage() {
 
         setLoading(true);
         try {
-            // Bước 1: Gọi API login để lấy JWT token
+            // Bước 1: Login lấy token
             await authApi.login(username, password);
 
-            // Bước 2: Gọi API lấy thông tin user hiện tại (role, full_name, ...)
+            // Bước 2: Lấy info
             const userData = await authApi.getMe();
 
-            // Bước 3: Điều hướng dựa trên role từ backend
+            // Bước 3: Kiểm tra quyền truy cập (Quan trọng!)
+            const currentUserRole = userData.role ? userData.role.toLowerCase() : '';
+            if (requiredRole && currentUserRole !== requiredRole.toLowerCase()) {
+                // Nếu đăng nhập sai trang (VD: Thủ thư vào trang Admin)
+                authApi.logout(); 
+                setError(`Tài khoản này không có quyền truy cập trang dành cho ${roleLabel}.`);
+                return;
+            }
+
+            // Bước 4: Điều hướng
             if (userData.role === 'admin') {
                 navigate('/admin/users');
             } else {
                 navigate('/admin/books');
             }
         } catch (err) {
-            // Hiển thị lỗi từ backend (VD: "Incorrect username or password")
             setError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
         } finally {
             setLoading(false);
@@ -52,11 +54,11 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <Card className="w-full max-w-md shadow-lg" style={{ borderRadius: '12px' }}>
+            <Card className="w-full max-w-md shadow-lg border-t-4" style={{ borderRadius: '12px', borderTopColor: requiredRole === 'admin' ? '#ef4444' : '#3b82f6' }}>
                 <div className="text-center mb-6">
-                    <i className="pi pi-book text-blue-600 text-5xl mb-3"></i>
-                    <h2 className="text-2xl font-bold text-gray-800 m-0">Đăng nhập hệ thống</h2>
-                    <p className="text-gray-500 mt-2">Dành cho Cán bộ thư viện & Quản trị viên</p>
+                    <i className={`${icon} ${requiredRole === 'admin' ? 'text-red-600' : 'text-blue-600'} text-5xl mb-3`}></i>
+                    <h2 className="text-2xl font-bold text-gray-800 m-0">{title}</h2>
+                    <p className="text-gray-500 mt-2">Dành cho {roleLabel}</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="flex flex-col gap-4">
@@ -68,9 +70,8 @@ export default function LoginPage() {
                     )}
 
                     <div className="flex flex-col gap-2">
-                        <label htmlFor="username" className="font-semibold text-gray-700">Tên đăng nhập</label>
+                        <label className="font-semibold text-gray-700">Tên đăng nhập</label>
                         <InputText
-                            id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="p-3"
@@ -80,14 +81,12 @@ export default function LoginPage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label htmlFor="password" className="font-semibold text-gray-700">Mật khẩu</label>
+                        <label className="font-semibold text-gray-700">Mật khẩu</label>
                         <Password
-                            inputId="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             toggleMask
                             feedback={false}
-                            className="w-full"
                             inputClassName="w-full p-3"
                             placeholder="Nhập mật khẩu"
                             disabled={loading}
@@ -95,17 +94,13 @@ export default function LoginPage() {
                     </div>
 
                     <div className="flex items-center justify-between text-sm mt-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
-                            <span className="text-gray-600">Ghi nhớ đăng nhập</span>
-                        </label>
-                        <a href="#" className="text-blue-600 hover:underline">Quên mật khẩu?</a>
+                         <a href="#" className="text-blue-600 hover:underline" onClick={() => navigate('/forgot-password')}>Quên mật khẩu?</a>
                     </div>
 
                     <Button
                         type="submit"
                         label={loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-                        className="w-full p-3 mt-4 text-lg"
+                        className={`w-full p-3 mt-4 text-lg ${requiredRole === 'admin' ? 'p-button-danger' : 'p-button-info'}`}
                         disabled={loading}
                         icon={loading ? 'pi pi-spin pi-spinner' : null}
                     />

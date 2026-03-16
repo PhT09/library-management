@@ -4,7 +4,7 @@ import models
 import schemas
 
 def create_reader(db: Session, reader: schemas.ReaderCreate):
-    db_reader = db.query(models.Reader).filter(models.Reader.id == reader.id)
+    db_reader = db.query(models.Reader).filter(models.Reader.id == reader.id).first()
     if db_reader:
         raise HTTPException(status_code=400, detail="Mã Độc giả đã tồn tại!")
     new_reader = models.Reader(**reader.dict())
@@ -23,7 +23,7 @@ def get_reader_by_id(db: Session, reader_id: str):
     return db_reader
 
 def update_reader(db: Session, reader_id: str, reader_update: schemas.ReaderUpdate):
-    db_reader = db.query(models.Reader).filter(models.Reader.id == reader_id)
+    db_reader = db.query(models.Reader).filter(models.Reader.id == reader_id).first()
     if not db_reader:
         raise HTTPException(status_code=404, detail="Không tìm thấy Độc giả!")
     

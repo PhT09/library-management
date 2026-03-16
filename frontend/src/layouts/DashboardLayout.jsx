@@ -11,33 +11,37 @@ export default function DashboardLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     // Lấy thông tin user từ localStorage (đã lưu sau khi login qua authApi.getMe())
-    const userRole = localStorage.getItem('userRole') || 'librarian';
+    const rawRole = localStorage.getItem('userRole');
+    const userRole = rawRole ? rawRole.toLowerCase() : '';
     const userInfo = authApi.getUserInfo();
 
-    const getMenuItems = () => {
-        const commonItems = [];
+    console.log('DashboardLayout: Current role is', userRole);
 
+    const getMenuItems = () => {
         const librarianItems = [
-            { label: 'Quản lý Danh mục sách', icon: 'pi pi-book', command: () => navigate('/admin/books') },
             { label: 'Quản lý Độc giả', icon: 'pi pi-users', command: () => navigate('/admin/readers') },
-            { label: 'Mượn/Trả sách', icon: 'pi pi-arrow-right-arrow-left', command: () => navigate('/admin/borrow-return') }
+            { label: 'Quản lý Sách', icon: 'pi pi-book', command: () => navigate('/admin/books') },
+            { label: 'Cho mượn sách', icon: 'pi pi-upload', command: () => navigate('/admin/borrow') },
+            { label: 'Nhận trả sách', icon: 'pi pi-download', command: () => navigate('/admin/returns') },
+            { label: 'Báo cáo Thống kê', icon: 'pi pi-chart-bar', command: () => navigate('/admin/reports') }
         ];
 
         const adminItems = [
-            { label: 'Quản lý Người dùng hệ thống', icon: 'pi pi-id-card', command: () => navigate('/admin/users') },
+            { label: 'Quản lý Nhân viên', icon: 'pi pi-user-edit', command: () => navigate('/admin/users') },
             { label: 'Cấu phần hệ thống', icon: 'pi pi-cog', command: () => navigate('/admin/settings') }
         ];
 
-        return userRole === 'admin' ? [...adminItems, ...commonItems] : [...librarianItems, ...commonItems];
+        // Tuyệt đối không cho Thủ thư thấy adminItems
+        if (userRole === 'admin') {
+            return [...adminItems, ...librarianItems];
+        }
+        return [...librarianItems];
     };
 
-    /**
-     * Đăng xuất: xóa token + userRole + userInfo khỏi localStorage,
-     * sau đó redirect về trang login
-     */
     const handleLogout = () => {
         authApi.logout();
-        navigate('/login');
+        localStorage.clear(); // Xóa sạch băng để tránh kẹt role cũ
+        navigate('/');
     };
 
     return (
@@ -46,7 +50,9 @@ export default function DashboardLayout() {
             <aside className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-white shadow-md transition-width duration-300 flex flex-col overflow-hidden`}>
                 <div className="h-16 flex items-center justify-center border-b border-gray-200 shrink-0">
                     <i className="pi pi-book text-blue-600 text-2xl mr-2"></i>
-                    <h2 className="text-xl font-bold text-gray-800 whitespace-nowrap">Admin Portal</h2>
+                    <h2 className="text-xl font-bold text-gray-800 whitespace-nowrap">
+                        {userRole === 'admin' ? 'Admin Portal' : 'Staff Portal'}
+                    </h2>
                 </div>
 
                 <div className="flex-grow py-4 px-3 overflow-y-auto">
