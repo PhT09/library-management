@@ -149,6 +149,32 @@ export const readerApi = {
     delete: (readerId) => request(`/readers/${readerId}`, {
         method: 'DELETE',
     }),
+    
+    /** Export: GET /readers/export */
+    exportExcel: (search) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        params.append('file_format', 'excel');
+        
+        // Cần truy cập token nếu /api yêu cầu
+        const token = localStorage.getItem('access_token');
+        const url = `${API_BASE}/readers/export?${params.toString()}`;
+        
+        // Lưu ý: với GET download file qua browser window.open, ta không truyền default headers (Bearer token) đc
+        // Tốt nhất backend nên verify bằng cookie hoặc pass qua query param, nhưng mock ở đây đơn giản:
+        // Đính kèm token vô link nếu hệ thống cần
+        fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).then(res => res.blob()).then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Danh_sach_doc_gia.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    },
 };
 
 // ============================================================

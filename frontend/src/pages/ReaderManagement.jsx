@@ -184,20 +184,10 @@ export default function ReaderManagement() {
     };
 
     // ============================================================
-    // Xuất CSV từ dữ liệu hiện tại
+    // Xuất Excel từ API
     // ============================================================
-    const exportCSV = () => {
-        const headers = ['Mã ĐG', 'Họ tên', 'Lớp', 'Ngày sinh', 'Giới tính', 'Trạng thái'];
-        const csvData = readers.map(r =>
-            [r.id, r.full_name, r.class_name, r.dob, r.gender, r.is_active ? 'Active' : 'Inactive'].join(',')
-        );
-        const csvContent = [headers.join(','), ...csvData].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'DanhSachDocGia.csv';
-        link.click();
+    const exportExcel = () => {
+        readerApi.exportExcel(globalFilter);
     };
 
     // ============================================================
@@ -229,7 +219,7 @@ export default function ReaderManagement() {
                     />
                 </div>
                 <Button label="Thêm mới" icon="pi pi-plus" className="p-button-success" onClick={openNew} />
-                <Button label="Xuất dữ liệu" icon="pi pi-file-excel" className="p-button-help" onClick={exportCSV} />
+                <Button label="Xuất Excel" icon="pi pi-file-excel" className="p-button-help" onClick={exportExcel} />
             </div>
         </div>
     );
