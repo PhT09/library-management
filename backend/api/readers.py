@@ -47,6 +47,10 @@ def update_reader(
     """Sửa thông tin Độc giả"""
     return reader_service.update_reader(db=db, reader_id=reader_id, reader_update=reader_update)
 
+@router.patch("/{reader_id}/toggle-status")
+def toggle_reader_status(reader_id: str, db: Session = Depends(get_db)):
+    return reader_service.toggle_reader_status(db=db, reader_id=reader_id)
+
 @router.delete("/{reader_id}")
 def delete_reader(
     reader_id: str, 

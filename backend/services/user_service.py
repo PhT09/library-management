@@ -39,9 +39,7 @@ def update_librarian(db: Session, librarian_id: int, user_in: UserUpdate):
         
     update_data = user_in.dict(exclude_unset=True)
     if "password" in update_data:
-        hashed_password = get_password_hash(update_data["password"])
-        del update_data["password"]
-        update_data["hashed_password"] = hashed_password
+        raise HTTPException(status_code=400, detail="Không được phép đổi mật khẩu thủ công. Yêu cầu tạo Ticket (Forgot Password) để Admin cấp lại.")
         
     for field, value in update_data.items():
         setattr(db_user, field, value)

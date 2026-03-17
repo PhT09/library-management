@@ -9,6 +9,8 @@ from core.security import verify_password, create_access_token
 from models.user import User
 from schemas.token import Token
 from schemas.user import UserResponse
+from schemas.password_reset import ForgotPasswordRequest
+from models.password_reset import PasswordResetTicket
 
 router = APIRouter(tags=["Authentication"])
 
@@ -30,6 +32,15 @@ def login_access_token(
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
+    pending_ticket = db.query(PasswordResetTicket).filter(
+        PasswordResetTicket.user_id == user.id,
+        PasswordResetTicket.status == "pending"
+    ).first()
+    
+    if pending_ticket:
+        raise HTTPException(status_code=403, detail="Tài khoản đang có yêu cầu đổi mật khẩu. Không thể đăng nhập vào lúc này.")
+
+
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         subject=user.id, expires_delta=access_token_expires
@@ -42,9 +53,6 @@ def test_token(current_user: User = Depends(get_current_user)) -> User:
     Test access token
     """
     return current_user
-
-from schemas.password_reset import ForgotPasswordRequest
-from models.password_reset import PasswordResetTicket
 
 @router.post("/forgot-password")
 def request_password_reset(
@@ -65,6 +73,14 @@ def request_password_reset(
         
     if user.role == "admin":
         return {"message": "Please contact the system developer for a password reset"}
+        
+    pending_ticket = db.query(PasswordResetTicket).filter(
+        PasswordResetTicket.user_id == user.id,
+        PasswordResetTicket.status == "pending"
+    ).first()
+    
+    if pending_ticket:
+        raise HTTPException(status_code=400, detail="Tài khoản này đang có một yêu cầu tạo mới mật khẩu chờ xử lý. Vui lòng đợi tài khoản quản trị viên phê duyệt trước khi tạo yêu cầu mới.")
         
     ticket = PasswordResetTicket(user_id=user.id, reason=request.reason)
     db.add(ticket)
