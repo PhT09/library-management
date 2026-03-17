@@ -51,9 +51,11 @@ export default function ReaderManagement() {
         setLoading(true);
         try {
             const data = await readerApi.getAll();
-            setReaders(data);
+            console.log('ReaderManagement: Loaded data', data);
+            setReaders(Array.isArray(data) ? data : []);
         } catch (err) {
-            toast.current.show({
+            console.error('ReaderManagement: Load error', err);
+            toast.current?.show({
                 severity: 'error', summary: 'Lỗi',
                 detail: 'Không thể tải danh sách độc giả: ' + err.message, life: 4000
             });

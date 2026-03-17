@@ -5,7 +5,7 @@ from api.deps import get_db, get_current_active_user
 from models.user import User
 from services import borrow_service
 
-router = APIRouter(prefix="/borrow", tags=["Quản lý Mượn Trả"])
+router = APIRouter(prefix="/borrows", tags=["Quản lý Mượn Trả"])
 
 # ====================== MƯỢN SÁCH ======================
 

@@ -130,7 +130,20 @@ export default function PublicPage() {
                     <i className="pi pi-book text-blue-600 text-2xl"></i>
                     <h1 className="text-2xl font-bold text-gray-800 m-0">Library Portal</h1>
                 </div>
-                <Button label="Đăng nhập dành cho cán bộ" icon="pi pi-sign-in" className="p-button-outlined p-button-sm" onClick={() => navigate('/login')} />
+                <div className="flex flex-col gap-2">
+                    <Button 
+                        label="Đăng nhập Admin" 
+                        icon="pi pi-shield" 
+                        className="p-button-outlined p-button-sm p-button-danger" 
+                        onClick={() => navigate('/login-admin')} 
+                    />
+                    <Button 
+                        label="Đăng nhập Thủ thư" 
+                        icon="pi pi-id-card" 
+                        className="p-button-outlined p-button-sm p-button-info" 
+                        onClick={() => navigate('/login-librarian')} 
+                    />
+                </div>
             </header>
 
             {/* Hero Section + Search */}
