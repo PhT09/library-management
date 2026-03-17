@@ -110,9 +110,17 @@ export const authApi = {
 
     /** Lấy thông tin user đã cache trong localStorage */
     getUserInfo: () => {
-        const raw = localStorage.getItem('userInfo');
-        return raw ? JSON.parse(raw) : null;
+        try {
+            const raw = localStorage.getItem('userInfo');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            console.error('Error parsing userInfo:', e);
+            return null;
+        }
     },
+
+    /** Tìm kiếm user (dùng cho luồng quên mật khẩu) */
+    searchUser: (query) => request(`/librarians/?full_name=${encodeURIComponent(query)}`),
 };
 
 // ============================================================
@@ -134,10 +142,39 @@ export const readerApi = {
         body: JSON.stringify(readerData),
     }),
 
+    /** GET /readers/{id} - Lấy thông tin chi tiết độc giả */
+    getById: (readerId) => request(`/readers/${readerId}`),
+
     /** DELETE /readers/{id} - Xóa mềm (vô hiệu hóa) độc giả */
     delete: (readerId) => request(`/readers/${readerId}`, {
         method: 'DELETE',
     }),
+    
+    /** Export: GET /readers/export */
+    exportExcel: (search) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        params.append('file_format', 'excel');
+        
+        // Cần truy cập token nếu /api yêu cầu
+        const token = localStorage.getItem('access_token');
+        const url = `${API_BASE}/readers/export?${params.toString()}`;
+        
+        // Lưu ý: với GET download file qua browser window.open, ta không truyền default headers (Bearer token) đc
+        // Tốt nhất backend nên verify bằng cookie hoặc pass qua query param, nhưng mock ở đây đơn giản:
+        // Đính kèm token vô link nếu hệ thống cần
+        fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).then(res => res.blob()).then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Danh_sach_doc_gia.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    },
 };
 
 // ============================================================
@@ -151,19 +188,19 @@ export const bookApi = {
     search: (query) => request(`/books/search?q=${encodeURIComponent(query)}`),
 
     /** POST /books/ - Tạo mới sách */
-    create: (bookData) => request('/books/', {
+    createBook: (bookData) => request('/books/', {
         method: 'POST',
         body: JSON.stringify(bookData),
     }),
 
     /** PUT /books/{id} - Cập nhật sách */
-    update: (bookId, bookData) => request(`/books/${bookId}`, {
+    updateBook: (bookId, bookData) => request(`/books/${bookId}`, {
         method: 'PUT',
         body: JSON.stringify(bookData),
     }),
 
     /** DELETE /books/{id} - Xóa sách */
-    delete: (bookId) => request(`/books/${bookId}`, {
+    deleteBook: (bookId) => request(`/books/${bookId}`, {
         method: 'DELETE',
     }),
 
@@ -188,33 +225,55 @@ export const bookApi = {
     deleteCategory: (catId) => request(`/categories/${catId}`, {
         method: 'DELETE',
     }),
+
+    // --- Book Copies ---
+
+    /** GET /book-copies/ - Lấy danh sách tất cả bản sao sách */
+    getBookCopies: () => request('/book-copies/'),
+
+    /** POST /book-copies/ - Tạo mới bản sao sách */
+    createBookCopy: (copyData) => request('/book-copies/', {
+        method: 'POST',
+        body: JSON.stringify(copyData),
+    }),
+
+    /** PUT /book-copies/{id} - Cập nhật bản sao sách */
+    updateBookCopy: (copyId, copyData) => request(`/book-copies/${copyId}`, {
+        method: 'PUT',
+        body: JSON.stringify(copyData),
+    }),
+
+    /** DELETE /book-copies/{id} - Xóa bản sao sách */
+    deleteBookCopy: (copyId) => request(`/book-copies/${copyId}`, {
+        method: 'DELETE',
+    }),
 };
 
 // ============================================================
 // BORROW API - Mượn/Trả sách
 // ============================================================
 export const borrowApi = {
-    /** GET /?reader_id=...&status=... - Lấy danh sách phiếu mượn */
+    /** GET /borrows/ - Lấy danh sách phiếu mượn */
     getAll: (readerId, status) => {
         const params = new URLSearchParams();
         if (readerId) params.append('reader_id', readerId);
         if (status) params.append('status', status);
         const queryStr = params.toString();
-        return request(`/${queryStr ? '?' + queryStr : ''}`);
+        return request(`/borrows/${queryStr ? '?' + queryStr : ''}`);
     },
 
-    /** POST /borrow/?reader_id=...&book_copy_id=...&librarian_id=... */
+    /** POST /borrows/ - Lập phiếu mượn sách */
     borrow: (readerId, bookCopyId, librarianId = 1) => {
         const params = new URLSearchParams({
             reader_id: readerId,
             book_copy_id: bookCopyId,
             librarian_id: librarianId,
         });
-        return request(`/borrow/?${params.toString()}`, { method: 'POST' });
+        return request(`/borrows/?${params.toString()}`, { method: 'POST' });
     },
 
-    /** POST /return/{borrow_id} - Xác nhận trả sách */
-    returnBook: (borrowId) => request(`/return/${borrowId}`, { method: 'POST' }),
+    /** POST /borrows/return/{borrow_id} - Xác nhận trả sách */
+    returnBook: (borrowId) => request(`/borrows/return/${borrowId}`, { method: 'POST' }),
 };
 
 // ============================================================
@@ -241,6 +300,62 @@ export const librarianApi = {
         request(`/librarians/${librarianId}?target_librarian_id=${targetLibrarianId}`, {
             method: 'DELETE',
         }),
+
+    /** Đặt lại mật khẩu (dùng API PUT hiện có) */
+    resetPassword: (librarianId, newPassword) => request(`/librarians/${librarianId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ password: newPassword }),
+    }),
+};
+
+// ============================================================
+// TICKET API - Quản lý yêu cầu khôi phục mật khẩu (MOCKED via LocalStorage)
+// ============================================================
+export const ticketApi = {
+    /** Lấy danh sách ticket từ localStorage */
+    getAll: () => {
+        return new Promise((resolve) => {
+            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
+            resolve(tickets);
+        });
+    },
+
+    /** Tạo ticket mới */
+    create: (username, reason) => {
+        return new Promise((resolve) => {
+            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
+            const newTicket = {
+                id: Date.now(),
+                username,
+                reason,
+                created_at: new Date().toISOString()
+            };
+            tickets.unshift(newTicket); // Thêm vào đầu danh sách
+            localStorage.setItem('mock_password_tickets', JSON.stringify(tickets));
+            resolve(newTicket);
+        });
+    },
+
+    /** Phê duyệt: chỉ giả lập thành công */
+    approve: (ticketId) => {
+        return new Promise((resolve) => {
+            // Xóa ticket sau khi phê duyệt
+            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
+            const filtered = tickets.filter(t => t.id !== ticketId);
+            localStorage.setItem('mock_password_tickets', JSON.stringify(filtered));
+            resolve({ message: "Password reset successful (Mocked)" });
+        });
+    },
+
+    /** Xóa ticket */
+    delete: (ticketId) => {
+        return new Promise((resolve) => {
+            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
+            const filtered = tickets.filter(t => t.id !== ticketId);
+            localStorage.setItem('mock_password_tickets', JSON.stringify(filtered));
+            resolve({ message: "Ticket deleted (Mocked)" });
+        });
+    },
 };
 
 // ============================================================
@@ -248,8 +363,35 @@ export const librarianApi = {
 // ============================================================
 export const reportApi = {
     /** GET /reports/top-books - Top sách mượn nhiều nhất */
-    getTopBooks: (limit = 10) => request(`/reports/top-books?limit=${limit}`),
+    getTopBooks: (startDate, endDate, limit = 10) => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        params.append('limit', limit);
+        return request(`/reports/top-books?${params.toString()}`);
+    },
 
     /** GET /reports/unreturned-readers - Danh sách độc giả chưa trả sách */
-    getUnreturnedReaders: () => request('/reports/unreturned-readers'),
+    getUnreturnedReaders: (startDate, endDate) => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        return request(`/reports/unreturned-readers?${params.toString()}`);
+    },
+
+    /** Export PDF: GET /reports/export/pdf?... */
+    exportPDF: (startDate, endDate) => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        window.open(`${API_BASE}/reports/export/pdf?${params.toString()}`, '_blank');
+    },
+
+    /** Export Excel: GET /reports/export/excel?... */
+    exportExcel: (startDate, endDate) => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        window.open(`${API_BASE}/reports/export/excel?${params.toString()}`, '_blank');
+    }
 };

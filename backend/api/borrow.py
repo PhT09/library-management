@@ -5,7 +5,7 @@ from api.deps import get_db, get_current_active_user
 from models.user import User
 from services import borrow_service
 
-router = APIRouter(prefix="/borrow", tags=["Quản lý Mượn Trả"])
+router = APIRouter(prefix="/borrows", tags=["Quản lý Mượn Trả"])
 
 # ====================== MƯỢN SÁCH ======================
 
@@ -42,7 +42,7 @@ def return_book(
 
 # ====================== XEM PHIẾU MƯỢN ======================
 
-@router.get("/records")
+@router.get("/")
 def get_borrows(
     reader_id: Optional[str] = Query(None, description="Lọc theo Mã Độc giả"),
     book_copy_id: Optional[str] = Query(None, description="Lọc theo Mã Bản sao sách"),

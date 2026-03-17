@@ -106,6 +106,20 @@ def export_to_csv(data: list, report_type: str) -> io.StringIO:
                 item.get("book_name", ""),
                 item.get("borrow_date", "")
             ])
+    elif report_type == "readers":
+        headers = ["STT", "Mã ĐG", "Họ Tên", "Lớp", "Ngày sinh", "Giới tính", "Trạng thái"]
+        writer = csv.writer(output)
+        writer.writerow(headers)
+        for idx, item in enumerate(data, 1):
+            writer.writerow([
+                idx,
+                item.get("id", ""),
+                item.get("full_name", ""),
+                item.get("class_name", ""),
+                item.get("dob", ""),
+                item.get("gender", ""),
+                item.get("is_active", "")
+            ])
     
     output.seek(0)
     return output
@@ -209,6 +223,46 @@ def export_to_excel(data: list, report_type: str) -> io.BytesIO:
         ws.column_dimensions['F'].width = 14
         ws.column_dimensions['G'].width = 30
         ws.column_dimensions['H'].width = 14
+        
+    elif report_type == "readers":
+        ws.title = "Danh sách Độc giả"
+        headers = ["STT", "Mã ĐG", "Họ Tên", "Lớp", "Ngày sinh", "Giới tính", "Trạng thái"]
+        
+        # Tiêu đề báo cáo
+        ws.merge_cells('A1:G1')
+        title_cell = ws['A1']
+        title_cell.value = "DANH SÁCH ĐỘC GIẢ THƯ VIỆN"
+        title_cell.font = Font(bold=True, size=14, color="1F4E79")
+        title_cell.alignment = Alignment(horizontal="center")
+        
+        # Headers
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=3, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Dữ liệu
+        for idx, item in enumerate(data, 1):
+            row = idx + 3
+            ws.cell(row=row, column=1, value=idx).border = thin_border
+            ws.cell(row=row, column=2, value=item.get("id", "")).border = thin_border
+            ws.cell(row=row, column=3, value=item.get("full_name", "")).border = thin_border
+            ws.cell(row=row, column=4, value=item.get("class_name", "")).border = thin_border
+            ws.cell(row=row, column=5, value=item.get("dob", "")).border = thin_border
+            ws.cell(row=row, column=6, value=item.get("gender", "")).border = thin_border
+            status_text = "Hoạt động" if item.get("is_active") else "Đã khóa"
+            ws.cell(row=row, column=7, value=status_text).border = thin_border
+        
+        # Auto-fit column widths
+        ws.column_dimensions['A'].width = 6
+        ws.column_dimensions['B'].width = 15
+        ws.column_dimensions['C'].width = 30
+        ws.column_dimensions['D'].width = 20
+        ws.column_dimensions['E'].width = 15
+        ws.column_dimensions['F'].width = 15
+        ws.column_dimensions['G'].width = 20
     
     output = io.BytesIO()
     wb.save(output)
