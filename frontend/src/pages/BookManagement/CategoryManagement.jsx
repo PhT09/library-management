@@ -109,7 +109,6 @@ export default function CategoryManagement() {
             <h3 className="text-xl font-bold text-gray-800 m-0">Quản lý Chuyên ngành</h3>
             <div className="flex gap-3">
                 <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
                     <InputText
                         type="search"
                         onInput={(e) => setGlobalFilter(e.target.value)}

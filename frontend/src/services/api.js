@@ -15,6 +15,23 @@
 const API_BASE = '/api';
 
 // ============================================================
+// PUBLIC API - Tra cứu công khai
+// ============================================================
+export const publicApi = {
+    /** GET /public/books/search?q=... - Tìm kiếm sách công khai */
+    searchBooks: (query = '') => request(`/public/books/search?q=${encodeURIComponent(query)}`),
+    
+    /** GET /public/categories - Lấy danh sách chuyên ngành */
+    getCategories: () => request('/public/categories'),
+    
+    /** GET /public/authors - Lấy danh sách tác giả */
+    getAuthors: () => request('/public/authors'),
+    
+    /** GET /public/publishers - Lấy danh sách NXB */
+    getPublishers: () => request('/public/publishers'),
+};
+
+// ============================================================
 // HELPER: Hàm fetch có xử lý lỗi chung
 // ============================================================
 
@@ -148,6 +165,11 @@ export const readerApi = {
     /** DELETE /readers/{id} - Xóa mềm (vô hiệu hóa) độc giả */
     delete: (readerId) => request(`/readers/${readerId}`, {
         method: 'DELETE',
+    }),
+    
+    /** PATCH /readers/{id}/toggle-status - Đổi trạng thái thẻ độc giả */
+    toggleStatus: (readerId) => request(`/readers/${readerId}/toggle-status`, {
+        method: 'PATCH',
     }),
     
     /** Export: GET /readers/export */
@@ -309,53 +331,30 @@ export const librarianApi = {
 };
 
 // ============================================================
-// TICKET API - Quản lý yêu cầu khôi phục mật khẩu (MOCKED via LocalStorage)
+// TICKET API - Quản lý yêu cầu khôi phục mật khẩu (Kết nối Backend thật)
 // ============================================================
 export const ticketApi = {
-    /** Lấy danh sách ticket từ localStorage */
-    getAll: () => {
-        return new Promise((resolve) => {
-            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
-            resolve(tickets);
-        });
-    },
+    /** GET /admin/reset-tickets - Lấy danh sách ticket pending */
+    getAll: () => request('/admin/reset-tickets'),
 
-    /** Tạo ticket mới */
-    create: (username, reason) => {
-        return new Promise((resolve) => {
-            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
-            const newTicket = {
-                id: Date.now(),
-                username,
-                reason,
-                created_at: new Date().toISOString()
-            };
-            tickets.unshift(newTicket); // Thêm vào đầu danh sách
-            localStorage.setItem('mock_password_tickets', JSON.stringify(tickets));
-            resolve(newTicket);
-        });
-    },
+    /** POST /forgot-password - Create ticket theo endpoint backend */
+    create: (username, reason) => request('/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: username, reason })
+    }),
 
-    /** Phê duyệt: chỉ giả lập thành công */
-    approve: (ticketId) => {
-        return new Promise((resolve) => {
-            // Xóa ticket sau khi phê duyệt
-            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
-            const filtered = tickets.filter(t => t.id !== ticketId);
-            localStorage.setItem('mock_password_tickets', JSON.stringify(filtered));
-            resolve({ message: "Password reset successful (Mocked)" });
-        });
-    },
+    /** PATCH /admin/reset-tickets/{id} - Xử lý cấp lại mật khẩu */
+    approve: (ticketId, newPassword) => request(`/admin/reset-tickets/${ticketId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ action: 'process', new_password: newPassword })
+    }),
 
-    /** Xóa ticket */
-    delete: (ticketId) => {
-        return new Promise((resolve) => {
-            const tickets = JSON.parse(localStorage.getItem('mock_password_tickets') || '[]');
-            const filtered = tickets.filter(t => t.id !== ticketId);
-            localStorage.setItem('mock_password_tickets', JSON.stringify(filtered));
-            resolve({ message: "Ticket deleted (Mocked)" });
-        });
-    },
+    /** PATCH /admin/reset-tickets/{id} - Từ chối yêu cầu */
+    delete: (ticketId) => request(`/admin/reset-tickets/${ticketId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ action: 'reject' })
+    }),
 };
 
 // ============================================================

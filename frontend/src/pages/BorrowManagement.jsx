@@ -144,7 +144,6 @@ export default function BorrowManagement() {
             <Toast ref={toast} />
             
             <div className="flex items-center gap-2 mb-6">
-                <i className="pi pi-arrow-right-arrow-left text-blue-600 text-3xl"></i>
                 <h2 className="text-3xl font-bold text-gray-800 m-0">Quản lý Mượn sách</h2>
             </div>
 
@@ -187,7 +186,11 @@ export default function BorrowManagement() {
                         <Button 
                             label="Lập Phiếu Mượn" 
                             icon="pi pi-check-circle" 
-                            className="p-button-lg p-button-success w-full" 
+                            className={`p-button-lg w-full ${
+                                (!readerInfo || !copyInfo || !!activeBorrow || copyInfo.status !== 'Available') 
+                                ? 'opacity-50' // Style khi bị disabled
+                                : 'bg-green-500 text-white hover:bg-green-700 p-3' // Style khi enabled
+                            }`}
                             onClick={handleCreateBorrow}
                             loading={creating}
                             disabled={!readerInfo || !copyInfo || !!activeBorrow || copyInfo.status !== 'Available'}

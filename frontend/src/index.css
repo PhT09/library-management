@@ -22,3 +22,8 @@
   display: inline-block !important; /* Keep icon structure */
   width: auto !important;
 }
+
+.p-inputtext {
+  border: 1px solid #797979 !important;
+  padding: 0.5rem !important;
+}

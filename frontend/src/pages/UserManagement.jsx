@@ -6,13 +6,13 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
-import { TabView, TabPanel } from 'primereact/tabview';
 import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
-import { Message } from 'primereact/message';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
-import { librarianApi, ticketApi } from '../services/api';
+import { Message } from 'primereact/message';
+import { librarianApi } from '../services/api';
+import { AlignCenter } from 'lucide-react';
 
 export default function UserManagement() {
     const [userRole] = useState(localStorage.getItem('userRole'));
@@ -23,9 +23,7 @@ export default function UserManagement() {
     }
 
     const [users, setUsers] = useState([]);
-    const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(0);
     const [displayResetDialog, setDisplayResetDialog] = useState(false);
     const [displayDeleteDialog, setDisplayDeleteDialog] = useState(false);
     const [displayCreateDialog, setDisplayCreateDialog] = useState(false);
@@ -43,21 +41,14 @@ export default function UserManagement() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [usersData, ticketsData] = await Promise.all([
-                librarianApi.getAll().catch(err => {
-                    console.error('Librarian API Error:', err);
-                    return [];
-                }),
-                ticketApi.getAll().catch(err => {
-                    console.error('Ticket API Error:', err);
-                    return [];
-                })
-            ]);
+            const usersData = await librarianApi.getAll().catch(err => {
+                console.error('Librarian API Error:', err);
+                return [];
+            });
             
-            console.log('UserManagement: Loaded data', { usersData, ticketsData });
+            console.log('UserManagement: Loaded data', { usersData });
             
             setUsers(Array.isArray(usersData) ? usersData : []);
-            setTickets(Array.isArray(ticketsData) ? ticketsData : []);
         } catch (err) {
             console.error('UserManagement: Unexpected error', err);
             toast.current?.show({ severity: 'error', summary: 'Lỗi', detail: err.message });
@@ -109,34 +100,7 @@ export default function UserManagement() {
         }
     };
 
-    const handleApproveTicket = async (ticket) => {
-        try {
-            // Tìm ID của user dựa trên username trong ticket
-            const targetUser = users.find(u => u.username === ticket.username);
-            
-            if (targetUser) {
-                // Thực hiện reset mật khẩu thực sự về mặc định '123456'
-                await librarianApi.update(targetUser.id, { 
-                    password: 'password123',
-                    is_active: true 
-                });
-            }
 
-            // Gọi API ticket để xóa/phê duyệt ticket (đã mock qua localStorage)
-            await ticketApi.approve(ticket.id);
-            
-            toast.current.show({ 
-                severity: 'success', 
-                summary: 'Thành công', 
-                detail: targetUser 
-                    ? `Đã reset mật khẩu cho ${ticket.username} về 'password123' và xóa ticket.` 
-                    : `Đã xóa ticket cho ${ticket.username} (Không tìm thấy ID người dùng để reset mật khẩu).`
-            });
-            loadData();
-        } catch (err) {
-            toast.current.show({ severity: 'error', summary: 'Lỗi', detail: err.message });
-        }
-    };
 
     // Templates
     const statusBody = (rowData) => <Tag value={rowData.is_active ? 'Active' : 'Inactive'} severity={rowData.is_active ? 'success' : 'danger'} />;
@@ -144,8 +108,7 @@ export default function UserManagement() {
     const roleBody = (rowData) => <Tag value={rowData.role.toUpperCase()} severity={rowData.role === 'admin' ? 'info' : 'warning'} />;
 
     const actionBody = (rowData) => (
-        <div className="flex gap-2">
-            <Button icon="pi pi-key" className="p-button-rounded p-button-text p-button-warning" onClick={() => { setSelectedUser(rowData); setDisplayResetDialog(true); }} tooltip="Reset Password" />
+        <div className="flex justify-center gap-2">
             <Button icon="pi pi-trash" className="p-button-rounded p-button-text p-button-danger" 
                 onClick={() => { setSelectedUser(rowData); setDisplayDeleteDialog(true); }} 
                 disabled={rowData.role === 'admin'}
@@ -162,71 +125,14 @@ export default function UserManagement() {
                 <Button label="Thêm mới Thủ thư" icon="pi pi-user-plus" onClick={() => setDisplayCreateDialog(true)} />
             </div>
 
-            {tickets.length > 0 && (
-                <div className="mb-4">
-                    <Message 
-                        severity="error" 
-                        style={{ width: '100%', justifyContent: 'flex-start', borderWidth: '0 0 0 6px' }}
-                        content={(
-                            <div className="flex align-items-center">
-                                <i className="pi pi-bell text-xl mr-3"></i>
-                                <span className="font-bold text-lg">CẢNH BÁO: Bạn có {tickets.length} yêu cầu khôi phục mật khẩu mới!</span>
-                                <Button label="Xem ngay" className="p-button-link p-0 ml-3 font-bold" onClick={() => setActiveIndex(1)} />
-                            </div>
-                        )}
-                    />
-                </div>
-            )}
-
-            <Card className="shadow-sm">
-                <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-                    <TabPanel header="Danh sách Nhân viên" leftIcon="pi pi-users mr-2">
-                        <DataTable value={users} loading={loading} paginator rows={10} className="p-datatable-sm" dataKey="id">
-                            <Column field="id" header="ID" style={{ width: '5%' }} />
-                            <Column field="username" header="Username" sortable />
-                            <Column field="full_name" header="Họ và Tên" sortable />
-                            <Column field="role" header="Vai trò" body={roleBody} style={{ width: '10%' }} />
-                            <Column header="Trạng thái" body={statusBody} style={{ width: '10%' }} />
-                            <Column header="Hành động" body={actionBody} style={{ width: '15%' }} />
-                        </DataTable>
-                    </TabPanel>
-
-                    <TabPanel 
-                        header={
-                            <div className="flex align-items-center">
-                                <span className="mr-2">Yêu cầu đổi mật khẩu</span>
-                                {tickets.length > 0 && <Tag value={tickets.length} severity="danger" rounded />}
-                            </div>
-                        } 
-                        leftIcon="pi pi-ticket mr-2"
-                    >
-                        <DataTable value={tickets} loading={loading} emptyMessage="Hiện tại không có yêu cầu nào." className="p-datatable-sm">
-                            <Column field="username" header="Tên đăng nhập" sortable />
-                            <Column field="reason" header="Lý do yêu cầu" />
-                            <Column field="created_at" header="Thời gian gửi" body={(r) => new Date(r.created_at).toLocaleString('vi-VN')} sortable />
-                            <Column header="Thao tác" body={(r) => (
-                                <div className="flex gap-2">
-                                    <Button 
-                                        label="Reset Mật khẩu" 
-                                        icon="pi pi-refresh" 
-                                        className="p-button-sm p-button-warning" 
-                                        onClick={() => handleApproveTicket(r)} 
-                                        tooltip="Reset về mật khẩu mặc định và xóa yêu cầu này"
-                                    />
-                                    <Button 
-                                        icon="pi pi-trash" 
-                                        className="p-button-sm p-button-text p-button-danger" 
-                                        onClick={() => {
-                                            if(window.confirm('Xóa yêu cầu này mà không reset mật khẩu?')) {
-                                                ticketApi.delete(r.id).then(loadData);
-                                            }
-                                        }} 
-                                    />
-                                </div>
-                            )} />
-                        </DataTable>
-                    </TabPanel>
-                </TabView>
+            <Card className="shadow-sm pr-10 pl-10">
+                <DataTable value={users} loading={loading} paginator rows={10} className="p-datatable-sm" dataKey="id">
+                    <Column field="id" header="ID" style={{ width: '5%' }} />
+                    <Column field="username" header="Username" sortable />
+                    <Column field="full_name" header="Họ và Tên" sortable />
+                    <Column header="Trạng thái" body={statusBody} style={{ width: '10%' }} align="center" />
+                    <Column header="Hành động" body={actionBody} style={{ width: '10%' }} align="center" />
+                </DataTable>
             </Card>
 
             {/* Dialog Create User */}
@@ -248,15 +154,6 @@ export default function UserManagement() {
                         <Button label="Hủy" className="p-button-text" onClick={() => setDisplayCreateDialog(false)} />
                         <Button label="Lưu tài khoản" icon="pi pi-save" onClick={handleCreateUser} />
                     </div>
-                </div>
-            </Dialog>
-
-            {/* Dialog Reset Password */}
-            <Dialog header={`Reset mật khẩu cho: ${selectedUser?.username}`} visible={displayResetDialog} style={{ width: '400px' }} modal onHide={() => setDisplayResetDialog(false)}>
-                <div className="flex flex-col gap-4 pt-2 p-fluid">
-                    <label className="font-semibold">Mật khẩu mới</label>
-                    <Password value={newPassword} onChange={(e) => setNewPassword(e.target.value)} toggleMask className="w-full" />
-                    <Button label="Xác nhận Reset" icon="pi pi-check" className="p-button-warning" onClick={handleResetPassword} />
                 </div>
             </Dialog>
 

@@ -28,14 +28,16 @@ export default function DashboardLayout() {
 
         const adminItems = [
             { label: 'Quản lý Nhân viên', icon: 'pi pi-user-edit', command: () => navigate('/admin/users') },
-            { label: 'Cấu phần hệ thống', icon: 'pi pi-cog', command: () => navigate('/admin/settings') }
+            { label: 'Yêu cầu đổi mật khẩu', icon: 'pi pi-ticket', command: () => navigate('/admin/password-requests') }
         ];
 
         // Tuyệt đối không cho Thủ thư thấy adminItems
         if (userRole === 'admin') {
-            return [...adminItems, ...librarianItems];
+            return [...adminItems];
+        } else {
+            return [...librarianItems];
         }
-        return [...librarianItems];
+
     };
 
     const handleLogout = () => {
