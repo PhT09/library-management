@@ -120,6 +120,25 @@ export default function ReaderManagement() {
     };
 
     // ============================================================
+    // Thay đổi trạng thái thẻ Độc giả: PATCH /readers/{id}/toggle-status
+    // ============================================================
+    const toggleReaderStatus = async (reader) => {
+        try {
+            await readerApi.toggleStatus(reader.id);
+            toast.current.show({
+                severity: 'success', summary: 'Thành công',
+                detail: `Đã thay đổi trạng thái thẻ của Độc giả ${reader.full_name}`, life: 3000
+            });
+            loadReaders();
+        } catch (err) {
+            toast.current.show({
+                severity: 'error', summary: 'Lỗi',
+                detail: err.message, life: 4000
+            });
+        }
+    };
+
+    // ============================================================
     // Validate form trước khi gửi API
     // ============================================================
     const validateForm = () => {
@@ -210,7 +229,6 @@ export default function ReaderManagement() {
             <h2 className="text-xl font-bold text-gray-800 m-0">Quản lý Độc giả</h2>
             <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative">
-                    <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                     <InputText
                         type="search"
                         onInput={(e) => setGlobalFilter(e.target.value)}
@@ -225,18 +243,26 @@ export default function ReaderManagement() {
     );
 
     // ============================================================
-    // Template: Cột hành động (Sửa, In thẻ, Xóa)
+    // Template: Cột hành động (Sửa, Đổi trạng thái, In thẻ, Xóa)
     // ============================================================
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
-                <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-text" onClick={() => openEdit(rowData)} tooltip="Chỉnh sửa" />
-                <Button icon="pi pi-print" className="p-button-rounded p-button-secondary p-button-text" tooltip="In thẻ thư viện" />
+                <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-text" onClick={() => openEdit(rowData)} tooltip="Chỉnh sửa" tooltipOptions={{ position: 'top' }} />
+                <Button
+                    icon="pi pi-sync"
+                    className="p-button-rounded p-button-warning p-button-text"
+                    onClick={() => toggleReaderStatus(rowData)}
+                    tooltip="Đổi trạng thái"
+                    tooltipOptions={{ position: 'top' }}
+                />
+                <Button icon="pi pi-print" className="p-button-rounded p-button-secondary p-button-text" tooltip="In thẻ thư viện" tooltipOptions={{ position: 'top' }} />
                 <Button
                     icon="pi pi-trash"
                     className="p-button-rounded p-button-danger p-button-text"
                     onClick={() => confirmDelete(rowData)}
                     tooltip="Thu hồi thẻ"
+                    tooltipOptions={{ position: 'top' }}
                     disabled={!rowData.is_active}
                 />
             </div>

@@ -103,6 +103,7 @@ export default function LoginPageComponent({ title, roleLabel, requiredRole, ico
                         className={`w-full p-3 mt-4 text-lg ${requiredRole === 'admin' ? 'p-button-danger' : 'p-button-info'}`}
                         disabled={loading}
                         icon={loading ? 'pi pi-spin pi-spinner' : null}
+                        style={{ backgroundColor: requiredRole === 'admin' ? '#ef4444' : '#3b82f6' }}
                     />
 
                     <div className="text-center mt-4">

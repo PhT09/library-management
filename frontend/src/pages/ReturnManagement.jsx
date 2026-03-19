@@ -128,7 +128,6 @@ export default function ReturnManagement() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800 m-0">Quản lý Trả sách</h2>
             <span className="p-input-icon-left">
-                <i className="pi pi-search" />
                 <InputText
                     type="search"
                     onInput={(e) => setGlobalFilter(e.target.value)}

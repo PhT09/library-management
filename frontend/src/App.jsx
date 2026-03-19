@@ -9,6 +9,7 @@ import BorrowManagement from './pages/BorrowManagement';
 import ReturnManagement from './pages/ReturnManagement';
 import Reports from './pages/Reports';
 import UserManagement from './pages/UserManagement';
+import PasswordRequests from './pages/PasswordRequests';
 import ForgotPassword from './pages/ForgotPassword';
 import ContactPublisher from './pages/ContactPublisher';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,12 +35,13 @@ function App() {
             <Route path="borrow" element={<BorrowManagement />} />
             <Route path="returns" element={<ReturnManagement />} />
             <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Cấu phần hệ thống (Demo)</h2></div>} />
+            {/* <Route path="settings" element={<div className="p-4 bg-white rounded-lg shadow min-h-[400px]"><h2>Cấu phần hệ thống (Demo)</h2></div>} /> */}
           </Route>
 
           {/* CHỈ ADMIN mới vào được Quản lý người dùng */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="users" element={<UserManagement />} />
+            <Route path="password-requests" element={<PasswordRequests />} />
           </Route>
         </Route>
       </Routes>
