@@ -107,6 +107,16 @@ def get_all_books(db: Session):
         })
     return result
 
+def get_all_authors(db: Session):
+    """Lấy danh sách tất cả tác giả từ các đầu sách"""
+    authors = db.query(models.Book.author).filter(models.Book.author.isnot(None), models.Book.author != "").distinct().all()
+    return [author[0] for author in authors if author[0]]
+
+def get_all_publishers(db: Session):
+    """Lấy danh sách tất cả nhà xuất bản từ các đầu sách"""
+    publishers = db.query(models.Book.publisher).filter(models.Book.publisher.isnot(None), models.Book.publisher != "").distinct().all()
+    return [pub[0] for pub in publishers if pub[0]]
+
 def search_books(db: Session, q: str):
     """Tìm kiếm sách cho Thủ thư (đã đăng nhập)"""
     search = f"%{q}%"

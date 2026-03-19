@@ -16,3 +16,18 @@ def public_search_books(
     Trả về danh sách sách phù hợp để sinh viên lấy Mã sách ghi vào phiếu yêu cầu.
     """
     return book_service.search_books_public(db=db, q=q)
+
+@router.get("/categories")
+def get_public_categories(db: Session = Depends(get_db)):
+    """Lấy danh sách tất cả chuyên ngành công khai"""
+    return book_service.get_all_categories(db=db)
+
+@router.get("/authors")
+def get_public_authors(db: Session = Depends(get_db)):
+    """Lấy danh sách tất cả tác giả công khai"""
+    return book_service.get_all_authors(db=db)
+
+@router.get("/publishers")
+def get_public_publishers(db: Session = Depends(get_db)):
+    """Lấy danh sách tất cả nhà xuất bản công khai"""
+    return book_service.get_all_publishers(db=db)
