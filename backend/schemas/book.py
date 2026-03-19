@@ -46,3 +46,11 @@ class BookCopyUpdate(BaseModel):
 
 class BookCopyResponse(BookCopyCreate, ConfigBase):
     pass
+
+class BookPublicSearchResponse(BaseModel):
+    book_id: str
+    book_name: str
+    author: str
+    publisher: str
+    category_name: Optional[str] = None
+    available_copies: int
