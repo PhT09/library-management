@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from typing import List
 from sqlalchemy.orm import Session
 from api.deps import get_db, get_current_active_user
 from models.user import User
@@ -69,6 +70,14 @@ def get_all_books(
     current_user: User = Depends(get_current_active_user)
 ):
     return book_service.get_all_books(db=db)
+
+@router.get("/books/public-search", response_model=List[schemas.BookPublicSearchResponse])
+def search_books_public_endpoint(
+    q: str, 
+    db: Session = Depends(get_db)
+):
+    """Tìm kiếm sách công khai cho Sinh viên (KHÔNG cần đăng nhập)"""
+    return book_service.search_books_public(db=db, q=q)
 
 @router.get("/books/search")
 def search_books(
