@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply m-0 p-0 font-sans text-gray-800 bg-gray-50;
+  }
+}
+
+/* Fix PrimeReact Password component width to match InputText */
+.p-password, 
+.p-password > div,
+.p-password > span,
+.p-password > input {
+  display: block;
+  width: 100% !important;
+}
+
+.p-password > .p-icon-wrapper,
+.p-password > i.pi {
+  display: inline-block !important; /* Keep icon structure */
+  width: auto !important;
+}
+
+.p-inputtext {
+  border: 1px solid #797979 !important;
+  padding: 0.5rem !important;
+}
